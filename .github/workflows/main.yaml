@@ -68,9 +68,9 @@ jobs:
               --comment "Deploy Docker image from ECR" \
               --parameters "commands=[
                 \"aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY\",
-                \"docker stop ${{ env.CONTAINER_NAME }} || true\",
+                \"docker stop ${{ vars.CONTAINER_NAME }} || true\",
                 \"docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",
-                \"docker run --rm -d --name ${{ env.CONTAINER_NAME }} -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
+                \"docker run --rm -d --name ${{ vars.CONTAINER_NAME }} -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
               ]" \
               --query "Command.CommandId" \
               --output text)
