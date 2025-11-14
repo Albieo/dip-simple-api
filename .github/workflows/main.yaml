@@ -54,29 +54,29 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_EC2_INSTANCE_ID_1: ${{ secrets.AWS_EC2_INSTANCE_ID_1 }}
+          AWS_EC2_INSTANCE_ID_2: ${{ secrets.AWS_EC2_INSTANCE_ID_2 }}
         run: |
-          instance_ids=("i-0e92c3c4a3db73007" "i-0029335c18d9eb9bf")
-          
+          instance_ids=("$AWS_EC2_INSTANCE_ID_1" "$AWS_EC2_INSTANCE_ID_2")
+
           for instance_id in "${instance_ids[@]}"; do
             echo "Deploying to instance: $instance_id"
-            
+
             command_id=$(aws ssm send-command \
               --instance-ids "$instance_id" \
               --document-name "AWS-RunShellScript" \
               --comment "Deploy Docker image from ECR" \
               --parameters "commands=[
                 \"aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY\",
-                \"docker stop api || true\",
-                \"docker rm api || true\",
+                \"docker stop ${{ env.CONTAINER_NAME }} || true\",
                 \"docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",
-                \"docker run --rm -d --name api -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
+                \"docker run --rm -d --name ${{ env.CONTAINER_NAME }} -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
               ]" \
               --query "Command.CommandId" \
               --output text)
 
             echo "SSM CommandId for $instance_id: $command_id"
-            
-            # Wait for command to complete
+
             aws ssm wait command-executed \
               --command-id "$command_id" \
               --instance-id "$instance_id" \
