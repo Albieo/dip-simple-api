@@ -54,14 +54,15 @@ jobs:
       - name: Deploy to EC2 instance
         run: |
           instance_ids=("i-0e92c3c4a3db73007" "i-0029335c18d9eb9bf")
+          instance_ids=("i-0e92c3c4a3db73007" "i-0029335c18d9eb9bf")
           command_id=$(aws ssm send-command \
-            --instance-ids "${instance-ids[@]}" \
+            --instance-ids "${instance_ids[@]}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Docker image from ECR" \
-            --parameters 'commands=["aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
+            --parameters 'commands=["aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
               "docker pull ${{ steps.login-ecr.outputs.registry }}/${{ steps.login-ecr.outputs.ECR_REPOSITORY }}/:${{ steps.login-ecr.outputs.IMAGE_TAG }}",
               "docker run --rm -d -p 3000:3000 ${{ steps.login-ecr.outputs.registry }}/${{ steps.login-ecr.outputs.ECR_REPOSITORY }}/:${{ steps.login-ecr.outputs.IMAGE_TAG }}"
-            ]' --query "Command.CommandId" --output text)
+          ]' --query "Command.CommandId" --output text)
 
           echo "SSM CommandId: $command_id"
 
