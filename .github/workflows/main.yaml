@@ -27,7 +27,7 @@ jobs:
       - name: Deploy to EC2 instance
         run: |
           command_id=$(aws ssm send-command \
-            --instance-ids "i-0e92c3c4a3db73007,i-0029335c18d9eb9bf" \
+            --instance-ids "i-0e92c3c4a3db73007","i-0029335c18d9eb9bf" \
             --document-name "AWS-RunShellScript" \
           # --targets "Key=instanceids,Values=i-0e92c3c4a3db73007,i-0029335c18d9eb9bf" \
             --comment "Deploy Docker image from ECR" \
